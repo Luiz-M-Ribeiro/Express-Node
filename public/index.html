@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Livros</title>
+</head>
+<body>
+  <h1>📚 Lista de Livros</h1>
+
+  <form id="formLivro">
+    <input type="text" id="titulo" placeholder="Título" required>
+    <input type="text" id="autor" placeholder="Autor" required>
+    <button type="submit">Adicionar</button>
+  </form>
+
+  <ul id="listaLivros"></ul>
+
+  <script>
+    const lista = document.getElementById('listaLivros');
+    const form = document.getElementById('formLivro');
+
+    function carregarLivros() {
+      fetch('/livros')
+        .then(res => res.json())
+        .then(livros => {
+          lista.innerHTML = '';
+          livros.forEach(livro => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <strong>${livro.titulo}</strong> - ${livro.autor}
+              <button onclick="excluirLivro(${livro.id})">Excluir</button>
+            `;
+            lista.appendChild(li);
+          });
+        });
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const titulo = document.getElementById('titulo').value;
+      const autor = document.getElementById('autor').value;
+
+      fetch('/livros', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titulo, autor })
+      })
+      .then(() => {
+        form.reset();
+        carregarLivros();
+      });
+    });
+
+    function excluirLivro(id) {
+      fetch(`/livros/${id}`, { method: 'DELETE' })
+        .then(() => carregarLivros());
+    }
+
+    carregarLivros();
+  </script>
+</body>
+</html>
