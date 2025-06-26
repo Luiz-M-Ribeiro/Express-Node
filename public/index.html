@@ -16,47 +16,64 @@
   <ul id="listaLivros"></ul>
 
   <script>
-    const lista = document.getElementById('listaLivros');
-    const form = document.getElementById('formLivro');
+  const lista = document.getElementById('listaLivros');
+  const form = document.getElementById('formLivro');
 
-    function carregarLivros() {
-      fetch('/livros')
-        .then(res => res.json())
-        .then(livros => {
-          lista.innerHTML = '';
-          livros.forEach(livro => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-              <strong>${livro.titulo}</strong> - ${livro.autor}
-              <button onclick="excluirLivro(${livro.id})">Excluir</button>
-            `;
-            lista.appendChild(li);
-          });
+  function carregarLivros() {
+    fetch('/livros')
+      .then(res => res.json())
+      .then(livros => {
+        lista.innerHTML = '';
+        livros.forEach(livro => {
+          const li = document.createElement('li');
+
+          li.innerHTML = `
+            <strong>${livro.titulo}</strong> - <span id="autor-${livro.id}">${livro.autor}</span>
+            <button onclick="excluirLivro(${livro.id})">Excluir</button>
+            <button onclick="editarAutor(${livro.id})">Editar Autor</button>
+          `;
+
+          lista.appendChild(li);
         });
-    }
-
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const titulo = document.getElementById('titulo').value;
-      const autor = document.getElementById('autor').value;
-
-      fetch('/livros', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titulo, autor })
-      })
-      .then(() => {
-        form.reset();
-        carregarLivros();
       });
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const titulo = document.getElementById('titulo').value;
+    const autor = document.getElementById('autor').value;
+
+    fetch('/livros', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, autor })
+    })
+    .then(() => {
+      form.reset();
+      carregarLivros();
     });
+  });
 
-    function excluirLivro(id) {
-      fetch(`/livros/${id}`, { method: 'DELETE' })
-        .then(() => carregarLivros());
+  function excluirLivro(id) {
+    fetch(`/livros/${id}`, { method: 'DELETE' })
+      .then(() => carregarLivros());
+  }
+
+  function editarAutor(id) {
+    const atual = document.getElementById(`autor-${id}`).textContent;
+    const novoAutor = prompt("Novo nome do autor:", atual);
+    if (novoAutor && novoAutor.trim() !== '') {
+      fetch(`/livros/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ autor: novoAutor })
+      })
+      .then(() => carregarLivros());
     }
+  }
 
-    carregarLivros();
-  </script>
+  carregarLivros();
+</script>
+
 </body>
 </html>

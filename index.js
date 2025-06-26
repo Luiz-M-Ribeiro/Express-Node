@@ -23,6 +23,21 @@ app.post('/livros', (req, res) => {
   res.status(201).json(novoLivro);
 });
 
+app.put('/livros/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const { autor } = req.body;
+
+  const livro = livros.find(l => l.id === id);
+
+  if (!livro) {
+    return res.status(404).json({ mensagem: 'Livro não encontrado.' });
+  }
+
+  livro.autor = autor;
+  res.json({ mensagem: 'Autor atualizado com sucesso.', livro });
+});
+
+
 app.delete('/livros/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const index = livros.findIndex(l => l.id === id);
